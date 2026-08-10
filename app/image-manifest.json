@@ -1,0 +1,66 @@
+{
+  "/assets/about-beef.webp": {
+    "width": 900,
+    "height": 600
+  },
+  "/assets/about-portions.webp": {
+    "width": 900,
+    "height": 600
+  },
+  "/assets/about-sauces.webp": {
+    "width": 900,
+    "height": 600
+  },
+  "/assets/brand-lockup.webp": {
+    "width": 800,
+    "height": 800
+  },
+  "/assets/brand-logo.webp": {
+    "width": 512,
+    "height": 512
+  },
+  "/assets/burger-assembly-real.png": {
+    "width": 1536,
+    "height": 1024
+  },
+  "/assets/burger-bad-girl.webp": {
+    "width": 900,
+    "height": 900
+  },
+  "/assets/burger-bad-guy.webp": {
+    "width": 900,
+    "height": 900
+  },
+  "/assets/burger-cheesy-af.webp": {
+    "width": 294,
+    "height": 294
+  },
+  "/assets/burger-cruncher.webp": {
+    "width": 900,
+    "height": 900
+  },
+  "/assets/burger-grillz.webp": {
+    "width": 900,
+    "height": 900
+  },
+  "/assets/burger-seaquel.webp": {
+    "width": 900,
+    "height": 900
+  },
+  "/assets/burger-signature.webp": {
+    "width": 900,
+    "height": 900
+  },
+  "/assets/hero-burger.webp": {
+    "width": 1400,
+    "height": 1400
+  },
+  "/assets/loaded-fries.webp": {
+    "width": 1400,
+    "height": 1400
+  },
+  "/assets/pasta.webp": {
+    "width": 1400,
+    "height": 1400
+  }
+}
