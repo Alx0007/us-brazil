@@ -1,0 +1,53 @@
+.drinks {
+  min-height: 100vh;
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: #f1eee7;
+  color: #0b0b0b;
+  overflow: hidden
+}
+
+.drinks-copy {
+  position: relative;
+  z-index: 2
+}
+
+.drinks-copy>p:last-child {
+  margin-top: 30px;
+  color: #777;
+  font-size: 12px
+}
+
+.drinks-copy strong {
+  color: #111
+}
+
+.can {
+  position: absolute;
+  height: calc(var(--drink-height,360px) * var(--drink-scale,1));
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,.26))
+    drop-shadow(0 24px 26px rgba(0,0,0,.18))
+    drop-shadow(0 55px 60px rgba(0,0,0,.22));
+}
+
+.can img {
+  height: 100%;
+  width: auto;
+  filter: saturate(1.08) contrast(1.05);
+}
+
+.can--bottom {
+  left: 8%;
+  bottom: calc(var(--drink-offset,-40px) * var(--drink-scale,1));
+  transform: rotate(-13deg);
+  animation: can-float 5s ease-in-out infinite;
+}
+
+.can--top {
+  right: 9%;
+  top: calc(var(--drink-offset,-40px) * var(--drink-scale,1));
+  transform: rotate(17deg);
+  animation: can-float 6s -2s ease-in-out infinite reverse;
+}

@@ -15,6 +15,11 @@ type PictureProps = {
   draggable?: boolean;
   /** Dica de tamanho renderizado, para o browser escolher a variante certa. */
   sizes?: string;
+  /**
+   * Só aceita valores declarados em `images.qualities` no next.config.ts.
+   * Use 90 em foto de produto recortada; o padrão 75 basta para o resto.
+   */
+  quality?: 75 | 90;
   onError?: ReactEventHandler<HTMLImageElement>;
 };
 

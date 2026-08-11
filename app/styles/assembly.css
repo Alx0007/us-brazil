@@ -1,0 +1,169 @@
+.assembly {
+  min-height: 112vh;
+  position: relative;
+  display: grid;
+  grid-template-columns: .85fr 1.15fr;
+  align-items: center;
+  background: #101010;
+}
+
+.assembly-copy {
+  position: relative;
+  z-index: 3;
+  max-width: 570px;
+}
+
+.assembly h2, .section-heading h2, .dish h2, .about h2, .explode h2, .drinks h2 {
+  margin: 0;
+  font-size: clamp(54px, 6.9vw, 106px);
+  font-weight: 900;
+  line-height: .86;
+  letter-spacing: -.07em;
+}
+
+.assembly-copy > p:last-child {
+  max-width: 440px;
+  margin: 30px 0 0;
+  color: #8b8b8b;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.assembly-stage {
+  position: relative;
+  height: 720px;
+  perspective: 1200px;
+}
+
+.assembly-glow {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 72%;
+  height: 44%;
+  transform: translate(-50%,-50%);
+  background: radial-gradient(circle, rgba(var(--brand-rgb),.34), transparent 70%);
+  border-radius: 50%;
+  filter: blur(20px);
+}
+
+.ingredient {
+  --from-y: 0px;
+  --from-rot: 0deg;
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 52%;
+  width: min(780px, 112%);
+  aspect-ratio: 3 / 2;
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + var(--from-y))) rotate(var(--from-rot)) scale(.96);
+  transform-origin: center;
+  transition: opacity .55s ease, transform 1.25s var(--ease);
+  will-change: transform, opacity;
+}
+
+.ingredient img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-width: none;
+  filter: drop-shadow(0 32px 26px rgba(0,0,0,.52));
+  user-select: none;
+}
+
+.ingredient--bottom {
+  --from-y: 250px;
+  --from-rot: 2deg;
+  clip-path: inset(75% 0 4% 0);
+  transition-delay: .04s;
+}
+
+.ingredient--sauce {
+  --from-y: 185px;
+  --from-rot: -2deg;
+  clip-path: inset(70% 0 20% 0);
+  transition-delay: .16s;
+}
+
+.ingredient--patty {
+  --from-y: 116px;
+  --from-rot: 1.5deg;
+  clip-path: inset(60% 0 23% 0);
+  transition-delay: .29s;
+}
+
+.ingredient--cheese {
+  --from-y: 48px;
+  --from-rot: -2deg;
+  clip-path: inset(53% 0 31% 0);
+  transition-delay: .42s;
+}
+
+.ingredient--lettuce {
+  --from-y: -30px;
+  --from-rot: 1.5deg;
+  clip-path: inset(46% 0 38% 0);
+  transition-delay: .55s;
+}
+
+.ingredient--tomato {
+  --from-y: -103px;
+  --from-rot: -1.5deg;
+  clip-path: inset(40% 0 48% 0);
+  transition-delay: .68s;
+}
+
+.ingredient--pickle {
+  --from-y: -168px;
+  --from-rot: 2deg;
+  clip-path: inset(34% 0 55% 0);
+  transition-delay: .81s;
+}
+
+.ingredient--top {
+  --from-y: -270px;
+  --from-rot: -2deg;
+  clip-path: inset(8% 0 61% 0);
+  transition-delay: .94s;
+}
+
+.crumb {
+  position: absolute;
+  z-index: 4;
+  width: 7px;
+  height: 4px;
+  border-radius: 50%;
+  background: #f6ce84;
+  opacity: 0;
+}
+
+.crumb--one {
+  left: 24%;
+  top: 35%
+}
+
+.crumb--two {
+  right: 18%;
+  top: 48%;
+  animation-delay: 2.1s!important
+}
+
+.crumb--three {
+  right: 30%;
+  top: 29%;
+  animation-delay: 2.25s!important
+}
+
+.assembly-note {
+  position: absolute;
+  right: 3vw;
+  bottom: 35px;
+  margin: 0;
+  color: #616161;
+  font-size: 9px;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}

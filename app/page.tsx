@@ -14,14 +14,15 @@ import {
   addressLines,
   brand,
   burgers,
+  cardPhoto,
   contact,
   copy,
+  dish,
   formatPrice,
   fries,
   locale,
   navLinks,
   pad,
-  pasta,
   reviews,
   sections,
   sides,
@@ -325,7 +326,7 @@ export default function Home() {
           <div className="hero-aura" />
           <span className="orbit orbit--one" />
           <span className="orbit orbit--two" />
-          <Picture src={copy.hero.image} alt={`Hambúrguer ${brand.name}`} priority sizes="(max-width: 640px) 100vw, 690px" />
+          <Picture src={copy.hero.image} alt={`Hambúrguer ${brand.name}`} priority sizes="(max-width: 640px) 100vw, 690px" quality={90} />
           <span className="hero-shadow" />
         </div>
         <div className="hero-proof">
@@ -395,18 +396,50 @@ export default function Home() {
           </div>
 
           <div className="burger-visual-wrap">
-            <div className="burger-visual" style={{ "--burger-tone": active.tone } as CSSProperties}>
+            <div
+              className="burger-visual"
+              style={{
+                "--burger-tone": active.tone,
+                "--photo-top": `${cardPhoto.top}%`,
+                "--photo-left": `${cardPhoto.left}%`,
+                "--photo-width": `${cardPhoto.width}%`,
+              } as CSSProperties}
+            >
               <div className="burger-visual-number">{pad(activeBurger + 1)}</div>
               <div className="burger-ring" />
               {burgers.map((burger, index) => (
-                <Picture
+                <article
+                  className={`burger-card ${activeBurger === index ? "is-active" : ""}`}
                   key={burger.name}
-                  className={activeBurger === index ? "is-active" : ""}
-                  src={burger.image}
-                  alt={`Hambúrguer ${burger.name}`}
-                  sizes="(max-width: 640px) 92vw, 680px"
-                  onError={(event) => { event.currentTarget.src = copy.hero.image; }}
-                />
+                  aria-hidden={activeBurger !== index}
+                >
+                  {/*
+                    Duas camadas: a arte do cartão (nome, subtítulo e chama já
+                    embutidos) e o lanche recortado por cima. O texto do cartão
+                    é decorativo — o painel ao lado já traz nome, descrição e
+                    ingredientes como texto de verdade.
+                  */}
+                  {/*
+                    `sizes` deliberadamente generoso: a arte inteira pesa ~45KB,
+                    então não compensa o navegador baixar uma versão reduzida —
+                    o texto do cartão é pixel e perde nitidez ao ser diminuído.
+                  */}
+                  <Picture
+                    className="burger-card-art"
+                    src={burger.card}
+                    alt=""
+                    sizes="(max-width: 640px) 100vw, 1400px"
+                    quality={90}
+                  />
+                  <Picture
+                    className="burger-card-photo"
+                    src={burger.image}
+                    alt={`Hambúrguer ${burger.name}`}
+                    sizes="(max-width: 640px) 78vw, 900px"
+                    quality={90}
+                    onError={(event) => { event.currentTarget.src = copy.hero.image; }}
+                  />
+                </article>
               ))}
               <span className="burger-smoke burger-smoke--one" />
               <span className="burger-smoke burger-smoke--two" />
@@ -438,7 +471,7 @@ export default function Home() {
         </div>
         <div className="fries-layout">
           <div className="fries-product" data-reveal>
-            <div className="fries-orbit">{copy.fries.orbit}</div>
+            {copy.fries.orbit && <div className="fries-orbit">{copy.fries.orbit}</div>}
             <Picture src={copy.fries.image} alt={`Batata recheada ${brand.name}`} sizes="(max-width: 980px) 90vw, 600px" />
           </div>
           <div className="fries-list">
@@ -454,20 +487,20 @@ export default function Home() {
       </section>
     ),
 
-    pasta: () => (
-      <section id={idOf("pasta")} className="pasta section-pad">
-        <div className="pasta-image" data-reveal>
+    dish: () => (
+      <section id={idOf("dish")} className="dish section-pad">
+        <div className="dish-image" data-reveal>
           <div className="steam"><i /><i /><i /></div>
-          <Picture src={copy.pasta.image} alt={`Massa da ${brand.name}`} sizes="(max-width: 640px) 110vw, 760px" />
-          <p><Lines text={copy.pasta.imageNote} /></p>
+          <Picture src={copy.dish.image} alt={`Massa da ${brand.name}`} sizes="(max-width: 640px) 110vw, 760px" />
+          <p><Lines text={copy.dish.imageNote} /></p>
         </div>
-        <div className="pasta-copy" data-reveal>
-          <p className="eyebrow">{copy.pasta.eyebrow}</p>
-          <h2>{copy.pasta.titleTop}<br /><span>{copy.pasta.titleBottom}</span></h2>
-          {pasta.map((item, index) => (
-            <div className="pasta-item" key={item.name}>
+        <div className="dish-copy" data-reveal>
+          <p className="eyebrow">{copy.dish.eyebrow}</p>
+          <h2>{copy.dish.titleTop}<br /><span>{copy.dish.titleBottom}</span></h2>
+          {dish.map((item, index) => (
+            <div className="dish-item" key={item.name}>
               <span>{pad(index + 1)}</span>
-              <div><h3>{item.name}</h3><p>{item.description}</p></div>
+              <div><h3>{item.name}</h3>{item.description && <p>{item.description}</p>}</div>
               <strong>{formatPrice(item.price)}</strong>
             </div>
           ))}
@@ -498,8 +531,24 @@ export default function Home() {
 
     drinks: () => (
       <section id={idOf("drinks")} className="drinks section-pad">
-        <div className="can can--one" aria-hidden="true"><i /><b>SODA</b><span>350</span></div>
-        <div className="can can--two" aria-hidden="true"><i /><b>SODA</b><span>600</span></div>
+        {/*
+          Fotos recortadas das bebidas. A primeira da config vai embaixo à
+          esquerda, a segunda em cima à direita. São decorativas — os nomes e
+          preços estão no texto abaixo.
+        */}
+        {copy.drinks.items.slice(0, 2).map((item) => (
+          <div
+            className={`can can--${item.art.spot}`}
+            key={item.name}
+            aria-hidden="true"
+            style={{
+              "--drink-height": `${item.art.height}px`,
+              "--drink-offset": `${item.art.offset}px`,
+            } as CSSProperties}
+          >
+            <Picture src={item.image} alt="" sizes="320px" quality={90} />
+          </div>
+        ))}
         <div className="drinks-copy" data-reveal>
           <p className="eyebrow">{copy.drinks.eyebrow}</p>
           <h2>{copy.drinks.titleTop}<br /><span>{copy.drinks.titleBottom}</span></h2>
@@ -528,7 +577,13 @@ export default function Home() {
         </div>
         <div className="about-grid">
           {copy.about.cards.map((card, index) => (
-            <div className={`about-card about-card--${card.modifier}`} key={card.modifier} data-reveal>
+            <div className="about-card" key={card.title} data-reveal>
+              <Picture
+                className="about-card-photo"
+                src={card.image}
+                alt=""
+                sizes="(max-width: 640px) 100vw, 33vw"
+              />
               <span>{pad(index + 1)}</span>
               <h3>{card.title}</h3>
               <p>{card.body}</p>

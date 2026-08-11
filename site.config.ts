@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  *  CONFIGURAÇÃO DO SITE — é o único arquivo que muda de cliente para cliente.
  * ============================================================================
@@ -8,12 +8,18 @@
  *       `public/assets/`.
  *    2. Não edite `app/page.tsx` nem `app/globals.css` — eles são o produto.
  *
- *  ATENÇÃO antes de colocar no ar (ver SETUP.md):
- *    - `reviews` e `proof` abaixo são DADOS DE DEMONSTRAÇÃO. Substitua por
- *      avaliações e números reais, ou remova. Publicar depoimento inventado
- *      como se fosse real é propaganda enganosa.
- *    - `contact` está com dados fictícios de propósito. Preencher é
- *      obrigatório: se escapar, o site manda ligação para o lugar errado.
+ *  REGRAS QUE NÃO MUDAM DE CLIENTE (ver SETUP.md):
+ *    - `reviews` só aceita avaliação real, copiada do perfil do cliente.
+ *      Encurtar cabe; reescrever não — o que está entre aspas precisa ter sido
+ *      dito. Depoimento inventado é propaganda enganosa. Lista vazia esconde
+ *      a seção, o que é sempre melhor que inventar.
+ *    - `contact` precisa ser preenchido antes de publicar: se um dado de
+ *      exemplo escapar, o site manda ligação para o lugar errado.
+ *    - Nota e volume de avaliações (`copy.stats`, `copy.hero.proof`) têm que
+ *      bater com o perfil real.
+ *
+ *  Nesta instância: contato e avaliações são reais. O "500+" em `proof` e
+ *  `stats` ainda é número de demonstração — confirmar antes de publicar.
  */
 
 export type Burger = {
@@ -27,14 +33,22 @@ export type Burger = {
   price: number | null;
   ingredients: string[];
   description: string;
+  /** Foto do lanche recortada, em PNG/WebP com fundo transparente. */
   image: string;
+  /**
+   * Arte do cartão: fundo branco já com nome, subtítulo e chama. O `image`
+   * acima é sobreposto a ela. Exportar do Canva em 1563×1563, deixando vazio
+   * o espaço onde o lanche entra.
+   */
+  card: string;
   /** Cor do brilho de fundo quando este item está ativo. */
   tone: string;
 };
 
 export type LineItem = {
   name: string;
-  description: string;
+  /** Opcional: sem ela, o item mostra só nome e preço. */
+  description?: string;
   price: number;
 };
 
@@ -203,8 +217,22 @@ export const openingHours = [
 // ---------------------------------------------------------------------------
 
 export const seo = {
-  /** Domínio final do cliente. Necessário para o preview de link funcionar. */
-  url: "https://exemplo.com.br",
+  /**
+   * Endereço público do site. Alimenta o preview de link, o sitemap e os
+   * dados estruturados.
+   *
+   * O Netlify e a Vercel expõem a URL do deploy em variável de ambiente, então
+   * em teste isso se resolve sozinho — não precisa de domínio. Quando o
+   * domínio definitivo existir, troque o valor de baixo ou configure
+   * `SITE_URL` no painel da hospedagem.
+   */
+  url:
+    process.env.SITE_URL ??
+    process.env.URL ??                 // Netlify
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined) ??
+    "http://localhost:3000",
   title: "US BRAZIL — Carne na Brasa | Guarulhos",
   description:
     "Hambúrgueres artesanais, batatas recheadas e molhos da casa em Guarulhos. Salão, retirada e delivery.",
@@ -235,7 +263,7 @@ export type SectionKey =
   | "menu"
   | "explode"
   | "fries"
-  | "pasta"
+  | "dish"
   | "sides"
   | "drinks"
   | "about"
@@ -260,9 +288,11 @@ export const sections: SectionKey[] = [
   "menu",
   "explode",
   "fries",
-  // `drinks` vem depois de `about` para não ficar clara logo após `fries`.
-  "about",
+  // `dish` é escura e separa `fries` de `drinks`, que são claras — resolve o
+  // mesmo problema que antes obrigava `drinks` a vir depois de `about`.
+  "dish",
   "drinks",
+  "about",
   "stats",
   "reviews",
   "contact",
@@ -325,16 +355,24 @@ export const copy = {
     titleTop: "VAI COM",
     titleBottom: "TUDO.",
     intro: "Porções de 300g para dividir — batata dourada, cheddar, bacon flocado e dadinho de tapioca.",
-    image: "/assets/loaded-fries.webp",
-    orbit: "PARA DIVIDIR · QUENTE · GENEROSA · ",
+    image: "/assets/porcoes.webp",
+    /** Texto que gira dentro do círculo. Vazio esconde o elemento. */
+    orbit: "",
   },
 
-  pasta: {
-    eyebrow: "Não é acompanhamento",
-    titleTop: "MASSA COM",
-    titleBottom: "PRESENÇA.",
-    image: "/assets/pasta.webp",
-    imageNote: "Servida quente\nFinalizada na chama",
+  /**
+   * Seção de prato principal. Nome genérico de propósito: no template original
+   * era massa, aqui é prato feito, e no próximo cliente pode ser pizza.
+   *
+   * A foto é o prato recortado do fundo preto, para o degradê do container
+   * aparecer em volta e a sombra seguir a borda redonda do prato.
+   */
+  dish: {
+    eyebrow: "Almoço feito na hora",
+    titleTop: "PRATO QUE",
+    titleBottom: "SUSTENTA.",
+    image: "/assets/prato-feito.webp",
+    imageNote: "Prato no ponto\nSai direto do fogão",
   },
 
   sides: {
@@ -348,8 +386,25 @@ export const copy = {
     titleTop: "O ACOMPANHANTE",
     titleBottom: "PERFEITO.",
     items: [
-      { name: "Refrigerante 350ml", price: 8 },
-      { name: "Refrigerante 600ml", price: 12 },
+      /**
+       * `art` posiciona a foto no cenário, sem mexer na ordem do texto:
+       *   spot   — "bottom" (esquerda, embaixo) ou "top" (direita, em cima)
+       *   height — altura da foto em px, antes do ajuste de celular
+       *   offset — quanto vaza para fora da seção; mais negativo, mais some
+       *            atrás da borda. A seção corta o excesso.
+       */
+      {
+        name: "Refrigerante",
+        price: 7.9,
+        image: "/assets/drink-refri.webp",
+        art: { spot: "top" as const, height: 360, offset: -40 },
+      },
+      {
+        name: "Suco",
+        price: 11.9,
+        image: "/assets/drink-suco.webp",
+        art: { spot: "bottom" as const, height: 610, offset: -225 },
+      },
     ],
   },
 
@@ -358,21 +413,22 @@ export const copy = {
     titleTop: "GENEROSIDADE",
     titleMiddle: "É NOSSA",
     titleBottom: "ASSINATURA.",
+    /** A foto entra atrás do texto, esmaecida. Paisagem funciona melhor. */
     cards: [
       {
-        modifier: "beef",
         title: "Carne de verdade",
         body: "Sabor grande começa na base certa: carne suculenta, no ponto, em todos os clássicos da casa.",
+        image: "/assets/about-beef.webp",
       },
       {
-        modifier: "sauces",
         title: "Molhos da casa",
         body: "Clássico, chimichurri, chorizo ou queijo: nossos molhos dão a cada item um caráter próprio.",
+        image: "/assets/about-sauces.webp",
       },
       {
-        modifier: "portions",
         title: "Nada de porção pequena",
         body: "Venha com fome. A gente monta pratos generosos, que ficam tão bons quanto parecem.",
+        image: "/assets/about-portions.webp",
       },
     ],
   },
@@ -418,11 +474,27 @@ export const copy = {
 // ---------------------------------------------------------------------------
 
 /** ⚠️ Os 5 preços estão `null` — nenhum veio nas cartelas. Preencher antes de publicar. */
+/**
+ * Onde o hambúrguer recortado fica sobre o cartão. Os dois valores são
+ * porcentagens do cartão — é aqui que se ajusta o encaixe, sem tocar no CSS.
+ *
+ * Na arte atual o texto termina em 18% da altura e a chama começa em 66%,
+ * então o espaço livre vai de ~20% até a base.
+ */
+export const cardPhoto = {
+  /** Centro vertical do lanche. Menor sobe, maior desce. */
+  top: 60,
+  /** Centro horizontal. 50 = centralizado; acima disso, desloca à direita. */
+  left: 50,
+  /** Largura do lanche. Maior aumenta. */
+  width: 78,
+};
+
 export const burgers: Burger[] = [
   {
     name: "Us Brazil",
     kicker: "A obra da casa.",
-    price: null,
+    price: 41.9,
     ingredients: [
       "Blend 160g",
       "Hambúrguer de Catupiry empanado",
@@ -432,12 +504,13 @@ export const burgers: Burger[] = [
     ],
     description: "Blend de 160g com hambúrguer de Catupiry empanado, couve crispy e geleia agridoce levemente apimentada.",
     image: "/assets/burger-us-brazil.webp",
+    card: "/assets/card-us-brazil.webp",
     tone: "#feb506",
   },
   {
     name: "Us Cheddar",
     kicker: "Cheddar até o fim.",
-    price: null,
+    price: 40.9,
     ingredients: [
       "Blend 160g",
       "Pão australiano",
@@ -447,12 +520,13 @@ export const burgers: Burger[] = [
     ],
     description: "Creme de cheddar escorrendo, cebola caramelizada e bacon flocado no pão australiano.",
     image: "/assets/burger-us-cheddar.webp",
+    card: "/assets/card-us-cheddar.webp",
     tone: "#ffc93c",
   },
   {
     name: "Us Chicken",
     kicker: "Crocância de verdade.",
-    price: null,
+    price: 28.9,
     ingredients: [
       "Filé empanado no panko",
       "Pão francês",
@@ -462,12 +536,13 @@ export const burgers: Burger[] = [
     ],
     description: "Filé empanado no panko, muita crocância, molho especial e salada no pão francês.",
     image: "/assets/burger-us-chicken.webp",
+    card: "/assets/card-us-chicken.webp",
     tone: "#ffdc6b",
   },
   {
     name: "Us Nachos",
     kicker: "Sabor de nachos.",
-    price: null,
+    price: 36.9,
     ingredients: [
       "Blend 160g",
       "Pão brioche",
@@ -477,12 +552,13 @@ export const burgers: Burger[] = [
     ],
     description: "Creme de cheddar, fatias de bacon e Doritos por cima: um verdadeiro sabor de nachos.",
     image: "/assets/burger-us-nachos.webp",
+    card: "/assets/card-us-nachos.webp",
     tone: "#f5a623",
   },
   {
     name: "Us Tasty",
     kicker: "O clássico bem feito.",
-    price: null,
+    price: 28.9,
     ingredients: [
       "Blend 160g",
       "Pão de gergelim",
@@ -492,6 +568,7 @@ export const burgers: Burger[] = [
     ],
     description: "Cebola caramelizada, queijo prato, alface, tomate e nossa maionese verde no pão de gergelim.",
     image: "/assets/burger-us-tasty.webp",
+    card: "/assets/card-us-tasty.webp",
     tone: "#ffb020",
   },
 ];
@@ -503,9 +580,26 @@ export const fries: LineItem[] = [
   { name: "Dadinho de Tapioca", price: 35.9, description: "Dadinho de tapioca 300g · geleia agridoce levemente apimentada" },
 ];
 
-export const pasta: LineItem[] = [
-  { name: "Mamma Mia", price: 44, description: "Talharim · creme de frango · cogumelo · queijo gratinado" },
-  { name: "Bad MF", price: 48, description: "Talharim · carne · pastrami · molho de chorizo · queijo gratinado" },
+/**
+ * Pratos feitos. Sem `description` por enquanto — o item mostra só nome e
+ * preço. Para listar o que acompanha cada um, é só preencher.
+ */
+export const dish: LineItem[] = [
+  {
+    name: "Filé de Frango",
+    price: 22.9,
+    description: "Grelhado. Acompanha arroz branco, feijão carioca, fritas e salada",
+  },
+  {
+    name: "Parmegiana Contra Filé",
+    price: 49.9,
+    description: "Acompanha arroz e fritas",
+  },
+  {
+    name: "Panquecas",
+    price: 36.9,
+    description: "Acompanha arroz, fritas e salada",
+  },
 ];
 
 export const sides: LineItem[] = [
@@ -516,12 +610,31 @@ export const sides: LineItem[] = [
 ];
 
 /**
- * ⚠️ DEMONSTRAÇÃO. Substitua por avaliações reais (copiadas do perfil do
- * cliente) ou deixe a lista vazia — a seção some sozinha.
+ * Avaliações reais de clientes. As duas primeiras foram encurtadas para caber
+ * no card, usando as palavras da própria pessoa — cortar é aceitável, reescrever
+ * não: o que está entre aspas precisa ter sido dito.
+ *
+ * Lista vazia esconde a seção.
  */
 export const reviews: Review[] = [
-  { quote: "Um dos melhores hambúrgueres da região.", author: "Ana P.", source: "Avaliação de cliente" },
-  { quote: "O melhor lanche que já comi, sem exagero.", author: "Rafael M.", source: "Avaliação de cliente" },
-  { quote: "Atendimento rápido e qualidade impecável.", author: "Juliana S.", source: "Avaliação de cliente" },
-  { quote: "Porção generosa e sabor absurdo.", author: "Bruno T.", source: "Avaliação de cliente" },
+  {
+    quote: "Todos muito bem servidos, bem montados e incrivelmente saborosos. O molho caseiro é um destaque à parte.",
+    author: "Paula Spineli",
+    source: "Avaliação no Google",
+  },
+  {
+    quote: "A qualidade dos ingredientes e o sabor dos hambúrgueres foram incríveis. Atendimento muito atencioso.",
+    author: "Jackson Oliveira",
+    source: "Avaliação no Google",
+  },
+  {
+    quote: "Tudo maravilhoso. O atendimento da Andressa e da Vitória foi muito bom, e o lanche é incrível.",
+    author: "Erica Cardoso",
+    source: "Avaliação no Google",
+  },
+  {
+    quote: "Ambiente muito gostoso, atendimento maravilhoso e comida muito boa.",
+    author: "Khetlelin Khawane",
+    source: "Avaliação no Google",
+  },
 ];

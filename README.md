@@ -47,7 +47,8 @@ brand/                arte original da marca em alta (não é servida na web)
 app/
   page.tsx            estrutura das seções — igual para todos os clientes
   layout.tsx          shell do documento, fontes, metadados, injeção do tema
-  globals.css         tokens de design e estilos — igual para todos
+  globals.css         só encadeia os arquivos de styles/ na ordem da cascata
+  styles/             um arquivo por seção — igual para todos os clientes
   picture.tsx         imagem otimizada com dimensões automáticas
   structured-data.tsx JSON-LD de Restaurant, montado a partir da config
   sitemap.ts          sitemap.xml
@@ -124,26 +125,28 @@ Auditoria de 10/08/2026: **6/10**. A estrutura mobile é sólida — navegação
 dedicada, carrossel com scroll-snap no cardápio, zero overflow horizontal,
 imagens com dimensões declaradas. O que pesa é carga de renderização.
 
-Em ordem de retorno:
+Resolvido em 11/08/2026:
 
-1. **Três imagens escapam do `next/image`.** `about-beef`, `about-sauces` e
-   `about-portions` são `background-image` no CSS, não elementos `<img>`. São
-   212KB baixados em tamanho cheio (900×600) mesmo num celular de 375px.
-2. **Geist Mono é baixado e nunca usado.** Só `Geist` aparece aplicado.
-   Declarado em `app/layout.tsx`.
-3. **Blurs caros.** 15 elementos com `filter: blur()`, com raios de 100px, 82px
-   e 55px, mais um `backdrop-filter` na barra fixa. Baixar 100px → 40px é quase
-   imperceptível e muito mais barato em GPU de celular.
-4. **13 regras com animação infinita** simultâneas (6 partículas, 3 vapores,
-   2 órbitas, 2 fumaças, entre outras) numa página de ~15.500px de altura.
-   Pausar as de seções fora da viewport reaproveitando o `IntersectionObserver`
-   que o projeto já usa.
-5. **Alvos de toque abaixo de 44px.** Links do rodapé e botão "voltar ao topo"
-   com 15px de altura; links de navegação 38px; botões de pedido 42×42;
-   hambúrguer do menu 40×40.
+- As três fotos da seção "A casa" passaram de `background-image` para
+  `next/image`, então deixaram de baixar em tamanho cheio no celular.
+- Geist Mono saiu — era baixado e nunca aplicado.
+- Os desfuques pesados caíram de 100px/82px/55px para no máximo 30px. Os dois
+  maiores eram um círculo sólido borrado; viraram degradê radial, que suaviza
+  de graça e deixa o desfoque só para tirar bandeamento.
+- Nenhum alvo de toque abaixo de 44px, verificado em 320, 360, 390 e 430px.
+- A escala tipográfica do celular foi refeita por seção: cinco títulos eram
+  cortados pelo `overflow` das seções ou quebravam em cinco linhas, porque a
+  escala vinha do texto original em inglês e as palavras em português são mais
+  longas. A página encurtou ~2.200px.
 
-A nota é de análise estática — mede custos declarados, não fluidez observada.
-Para virar nota medida, falta um Lighthouse mobile com CPU throttling 4×.
+Ainda em aberto:
+
+- **13 regras com animação infinita** simultâneas (6 partículas, 3 vapores,
+  2 órbitas, 2 fumaças, entre outras). Pausar as de seções fora da viewport
+  reaproveitando o `IntersectionObserver` que o projeto já usa.
+- A nota 6/10 era de análise estática — mede custos declarados, não fluidez
+  observada. Para virar nota medida, falta um Lighthouse mobile com CPU
+  throttling 4×.
 
 ### Outras limitações conhecidas
 
@@ -154,13 +157,10 @@ Para virar nota medida, falta um Lighthouse mobile com CPU throttling 4×.
   `images.unoptimized`.
 - A animação de montagem é calibrada para uma foto específica — ver o fim do
   [SETUP.md](SETUP.md).
-- `globals.css` é um arquivo único com linhas muito longas. Funciona, mas
-  atrapalha manutenção em escala; vale quebrar por seção quando a carteira
-  crescer. O compilador de CSS já descartou silenciosamente uma declaração
-  `color` dentro de uma dessas mega-linhas — declarações novas em regras longas
-  merecem conferência no CSS servido.
 - Rodar `npm run build` com o `next dev` ativo derruba o servidor de
   desenvolvimento: os dois escrevem no mesmo `.next`.
+- Edições em CSS às vezes não recompilam com o servidor de desenvolvimento
+  ligado — se um ajuste não aparecer, apague `.next` e reinicie.
 
 ## Licença
 

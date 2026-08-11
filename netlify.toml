@@ -1,0 +1,17 @@
+# Configuração de build no Netlify.
+#
+# O runtime de Next.js é detectado sozinho — não precisa declarar plugin.
+# O que não é automático é a versão do Node: o padrão do Netlify é mais antigo
+# que o `engines` deste projeto, e o build falharia sem a linha abaixo.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Precisa acompanhar o `engines.node` do package.json
+  NODE_VERSION = "22.13.0"
+
+# `npm run build` roda `prebuild`, que gera o manifesto de imagens e os
+# favicons com o sharp. O sharp é devDependency, e o Netlify instala
+# devDependencies no build por padrão — nada a fazer.

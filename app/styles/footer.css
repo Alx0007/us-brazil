@@ -1,0 +1,54 @@
+.footer {
+  min-height: 350px;
+  padding-top: 70px;
+  padding-bottom: 35px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: space-between;
+  gap: 40px;
+  background: #0c0c0c;
+  border-top: 1px solid var(--border)
+}
+
+.footer>p {
+  justify-self: end;
+  color: #666;
+  font-size: 12px
+}
+
+.footer>div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 30px
+}
+
+.footer>div a {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .13em
+}
+
+.footer>button {
+  justify-self: end;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .13em
+}
+
+.footer>small {
+  grid-column: 1/-1;
+  padding-top: 25px;
+  border-top: 1px solid var(--border);
+  color: #535353;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .16em
+}
+
+.floating-call {
+  display: none;
+  color: var(--on-brand)
+}

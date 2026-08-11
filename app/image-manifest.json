@@ -11,10 +11,6 @@
     "width": 900,
     "height": 600
   },
-  "/assets/brand-lockup.webp": {
-    "width": 800,
-    "height": 800
-  },
   "/assets/brand-logo.webp": {
     "width": 512,
     "height": 512
@@ -24,35 +20,63 @@
     "height": 1024
   },
   "/assets/burger-us-brazil.webp": {
-    "width": 1000,
-    "height": 1000
+    "width": 1563,
+    "height": 1563
   },
   "/assets/burger-us-cheddar.webp": {
-    "width": 1000,
-    "height": 1000
+    "width": 1563,
+    "height": 1563
   },
   "/assets/burger-us-chicken.webp": {
-    "width": 1000,
-    "height": 1000
+    "width": 1563,
+    "height": 1563
   },
   "/assets/burger-us-nachos.webp": {
-    "width": 1000,
-    "height": 1000
+    "width": 1563,
+    "height": 1563
   },
   "/assets/burger-us-tasty.webp": {
-    "width": 1000,
+    "width": 1563,
+    "height": 1563
+  },
+  "/assets/card-us-brazil.webp": {
+    "width": 1563,
+    "height": 1563
+  },
+  "/assets/card-us-cheddar.webp": {
+    "width": 1563,
+    "height": 1563
+  },
+  "/assets/card-us-chicken.webp": {
+    "width": 1563,
+    "height": 1563
+  },
+  "/assets/card-us-nachos.webp": {
+    "width": 1563,
+    "height": 1563
+  },
+  "/assets/card-us-tasty.webp": {
+    "width": 1563,
+    "height": 1563
+  },
+  "/assets/drink-refri.webp": {
+    "width": 509,
+    "height": 1000
+  },
+  "/assets/drink-suco.webp": {
+    "width": 344,
     "height": 1000
   },
   "/assets/hero-burger.webp": {
     "width": 1400,
     "height": 1400
   },
-  "/assets/loaded-fries.webp": {
-    "width": 1400,
-    "height": 1400
+  "/assets/porcoes.webp": {
+    "width": 1041,
+    "height": 1220
   },
-  "/assets/pasta.webp": {
-    "width": 1400,
-    "height": 1400
+  "/assets/prato-feito.webp": {
+    "width": 1137,
+    "height": 1136
   }
 }
