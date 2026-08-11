@@ -45,6 +45,20 @@ const SECTION_ANCHOR: Partial<Record<SectionKey, string>> = {
 const anchorOf = (key: SectionKey) => SECTION_ANCHOR[key] ?? `#${key}`;
 const idOf = (key: SectionKey) => anchorOf(key).slice(1);
 
+/**
+ * Destino de todo botão "Pedir": o cardápio online, quando houver, senão o
+ * telefone. `orderProps` já traz o `target`/`rel` de link externo, e some
+ * quando o destino é `tel:` — abrir uma ligação em aba nova não faz sentido.
+ */
+const orderProps = contact.orderHref
+  ? { href: contact.orderHref, target: "_blank", rel: "noreferrer" }
+  : { href: contact.phoneHref };
+
+/** Complemento do rótulo acessível, para dizer aonde o botão leva. */
+const orderTargetLabel = contact.orderHref
+  ? `cardápio online da ${brand.name}`
+  : `ligar para ${brand.name}`;
+
 /** Renderiza quebras de linha vindas da config ("linha 1\nlinha 2"). */
 function Lines({ text }: { text: string }) {
   return (
@@ -209,18 +223,56 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /**
+   * Qual cartela está em foco: a do painel cujo centro está mais perto do
+   * centro da tela.
+   *
+   * Distância nos dois eixos de propósito — no desktop os painéis são uma
+   * coluna e quem decide é o eixo Y; no celular `.burger-panels` vira um
+   * carrossel horizontal e quem decide é o X. A mesma conta serve para os dois.
+   *
+   * O listener é de captura porque o scroll do carrossel do celular acontece
+   * num elemento interno, e evento de scroll não sobe por bubbling.
+   */
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActiveBurger(Number((visible.target as HTMLElement).dataset.index));
-      },
-      { threshold: [0.3, 0.5, 0.7], rootMargin: "-18% 0px -18% 0px" },
-    );
-    burgerPanels.current.forEach((node) => node && observer.observe(node));
-    return () => observer.disconnect();
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      const nodes = burgerPanels.current;
+      const midX = window.innerWidth / 2;
+      const midY = window.innerHeight / 2;
+      let best = 0;
+      let bestDistance = Infinity;
+
+      for (let index = 0; index < nodes.length; index++) {
+        const node = nodes[index];
+        if (!node) continue;
+        const box = node.getBoundingClientRect();
+        const dx = box.left + box.width / 2 - midX;
+        const dy = box.top + box.height / 2 - midY;
+        const distance = dx * dx + dy * dy;
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = index;
+        }
+      }
+
+      setActiveBurger(best);
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll, { capture: true });
+      window.removeEventListener("resize", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => {
@@ -266,7 +318,7 @@ export default function Home() {
           <h1><span>{copy.hero.titleTop}</span><span className="hero-outline">{copy.hero.titleOutline}</span></h1>
           <div className="hero-actions">
             <a className="button" href={anchorOf("menu")}>{copy.hero.ctaPrimary} <Arrow down /></a>
-            <a className="text-link" href={contact.phoneHref}>{copy.hero.ctaSecondary} <Arrow /></a>
+            <a className="text-link" {...orderProps}>{copy.hero.ctaSecondary} <Arrow /></a>
           </div>
         </div>
         <div className="hero-product" ref={heroVisual}>
@@ -336,7 +388,7 @@ export default function Home() {
                 </ul>
                 <div className="burger-order">
                   <strong>{formatPrice(burger.price)}</strong>
-                  <a className="button button--round" href={contact.phoneHref} aria-label={`Pedir ${burger.name}`}><Arrow /></a>
+                  <a className="button button--round" {...orderProps} aria-label={`Pedir ${burger.name}`}><Arrow /></a>
                 </div>
               </article>
             ))}
@@ -391,7 +443,7 @@ export default function Home() {
           </div>
           <div className="fries-list">
             {fries.map((item, index) => (
-              <a href={contact.phoneHref} className="fries-row" key={item.name} data-reveal>
+              <a key={item.name} {...orderProps} className="fries-row" data-reveal>
                 <span className="fries-index">{pad(index + 1)}</span>
                 <span><strong>{item.name}</strong><small>{item.description}</small></span>
                 <b>{formatPrice(item.price)}</b><Arrow />
@@ -437,7 +489,7 @@ export default function Home() {
               <span className="side-num">{pad(index + 1)}</span>
               <div className={`side-art side-art--${pad((index % 4) + 1)}`}><i /><i /><i /></div>
               <h3>{item.name}</h3><p>{item.description}</p><strong>{formatPrice(item.price)}</strong>
-              <a href={contact.phoneHref} aria-label={`Pedir ${item.name}`}><Arrow /></a>
+              <a {...orderProps} aria-label={`Pedir ${item.name}`}><Arrow /></a>
             </article>
           ))}
         </div>
@@ -530,7 +582,7 @@ export default function Home() {
           <p className="eyebrow">{copy.contact.eyebrow}</p>
           <h2>{copy.contact.title}</h2>
           <p>{copy.contact.body}</p>
-          <a className="call-giant" href={contact.phoneHref}><span>{copy.contact.cta}</span><Arrow /></a>
+          <a className="call-giant" {...orderProps}><span>{copy.contact.cta}</span><Arrow /></a>
         </div>
         <div className="contact-details" data-reveal>
           <a href={contact.phoneHref}>
@@ -563,7 +615,7 @@ export default function Home() {
         <nav className="desktop-nav" aria-label="Navegação principal">
           {liveNav.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
         </nav>
-        <a className="button button--small desktop-call" href={contact.phoneHref}>
+        <a className="button button--small desktop-call" {...orderProps}>
           {copy.hero.ctaSecondary} <Arrow />
         </a>
         <button
@@ -595,6 +647,9 @@ export default function Home() {
         <p>{brand.tagline}</p>
         <div>
           <a href={contact.instagramHref} target="_blank" rel="noreferrer">{copy.footer.instagram} <Arrow /></a>
+          {contact.facebookHref && (
+            <a href={contact.facebookHref} target="_blank" rel="noreferrer">{copy.footer.facebook} <Arrow /></a>
+          )}
           <a href={contact.mapsHref} target="_blank" rel="noreferrer">{copy.footer.maps} <Arrow /></a>
         </div>
         <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
@@ -603,7 +658,7 @@ export default function Home() {
         <small>© {new Date().getFullYear()} {brand.name}. Todos os direitos reservados.</small>
       </footer>
 
-      <a className="floating-call" href={contact.phoneHref} aria-label={`Ligar para ${brand.name}`}>
+      <a className="floating-call" {...orderProps} aria-label={`${copy.contact.cta} — ${orderTargetLabel}`}>
         {copy.contact.cta.split(" ")[0]} <span>↗</span>
       </a>
     </main>

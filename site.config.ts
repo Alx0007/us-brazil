@@ -19,7 +19,12 @@
 export type Burger = {
   name: string;
   kicker: string;
-  price: number;
+  /**
+   * `null` enquanto o preço não estiver confirmado: a página mostra
+   * "A definir" e o item sai dos dados estruturados, em vez de publicar um
+   * número inventado.
+   */
+  price: number | null;
   ingredients: string[];
   description: string;
   image: string;
@@ -73,9 +78,15 @@ export const locale = {
   currencyPosition: "prefix" as "prefix" | "suffix",
 };
 
-export function formatPrice(value: number): string {
+/** Texto no lugar do preço enquanto ele não foi confirmado. */
+export const PRICE_TBD = "A definir";
+
+export function formatPrice(value: number | null): string {
+  if (value === null) return PRICE_TBD;
+  // Preço redondo sai sem centavos ("R$ 32"); com centavos, sempre com as duas
+  // casas ("R$ 29,90", nunca "R$ 29,9").
   const amount = value.toLocaleString(locale.lang, {
-    minimumFractionDigits: 0,
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
     maximumFractionDigits: 2,
   });
   return locale.currencyPosition === "prefix"
@@ -120,28 +131,35 @@ export function themeToCss(): string {
 }
 
 // ---------------------------------------------------------------------------
-// Contato  ⚠️  DADOS FICTÍCIOS — trocar antes de publicar
+// Contato
 // ---------------------------------------------------------------------------
 
 export const contact = {
-  phoneDisplay: "(11) 90000-0000",
-  phoneHref: "tel:+5511900000000",
-  whatsappHref: "https://wa.me/5511900000000",
+  phoneDisplay: "(11) 98272-3746",
+  phoneHref: "tel:+5511982723746",
+  whatsappHref: "https://wa.me/5511982723746",
+  /**
+   * Cardápio online. É o destino de todo botão "Pedir agora" e de cada item do
+   * cardápio. Deixe "" para os botões voltarem a cair no telefone.
+   */
+  orderHref: "https://usbrazilsteakhouse.menudino.com/",
   address: {
-    street: "Rua Exemplo, 123",
-    district: "Centro",
+    street: "R. Comendador João Torquarto Lazarini, 170",
+    district: "Vila Nova Bonsucesso",
     city: "Guarulhos",
     region: "SP",
-    postalCode: "07000-000",
+    postalCode: "07175-060",
     /** Código de país de duas letras. */
     country: "BR",
   },
   mapsHref:
-    "https://www.google.com/maps/search/?api=1&query=Rua+Exemplo+123+Guarulhos",
-  instagramHref: "https://www.instagram.com/seu_usuario/",
+    "https://www.google.com/maps/place/us+brazil+steak+house/data=!4m2!3m1!1s0x94ce89425d9256b1:0xce833dc08ddbcace",
+  instagramHref: "https://www.instagram.com/usbrazilsteakhouse/",
+  /** Opcional — deixe "" para esconder o link no rodapé. */
+  facebookHref: "https://www.facebook.com/usbrazilsteakhose/",
   /** Horário por extenso, como aparece na página. */
-  hours: "Todos os dias, das 18h à 1h",
-  services: "Salão · Retirada · Delivery",
+  hours: "Segunda a sábado, das 11h às 23h",
+  services: "Salão · Retirada · iFood · 99Food · Keeta",
   /** Tipo de cozinha e faixa de preço, para os dados estruturados. */
   cuisine: "Hambúrguer",
   /** "$" a "$$$$", ou uma faixa como "R$ 30 - R$ 60". */
@@ -174,10 +192,9 @@ export const openingHours = [
       "Thursday",
       "Friday",
       "Saturday",
-      "Sunday",
     ],
-    opens: "18:00",
-    closes: "01:00",
+    opens: "11:00",
+    closes: "23:00",
   },
 ];
 
@@ -243,9 +260,9 @@ export const sections: SectionKey[] = [
   "menu",
   "explode",
   "fries",
-  "pasta",
-  "drinks",
+  // `drinks` vem depois de `about` para não ficar clara logo após `fries`.
   "about",
+  "drinks",
   "stats",
   "reviews",
   "contact",
@@ -260,14 +277,14 @@ export const copy = {
     overline: "Hambúrguer artesanal · Guarulhos",
     titleTop: "CARNE",
     titleOutline: "NA BRASA.",
-    labelLeft: "Centro\nDesde o primeiro dia",
-    labelRight: "Todo dia\nAté 1h",
-    ctaPrimary: "Ver cardápio",
-    ctaSecondary: "Ligar agora",
+    labelLeft: "Vila Nova Bonsucesso\nGuarulhos · SP",
+    labelRight: "Seg a Sáb\n11h às 23h",
+    ctaPrimary: "Ver opções",
+    ctaSecondary: "Pedir agora",
     image: "/assets/hero-burger.webp",
-    /** ⚠️ Números de demonstração — confirme antes de publicar. */
+    /** ⚠️ "500+" ainda é número de demonstração — confirme antes de publicar. */
     proof: [
-      { value: "4,8", label: "★★★★★", note: "Nota no Google" },
+      { value: "4,5", label: "★★★★★", note: "Nota no Google" },
       { value: "500+", label: "Avaliações", note: "De clientes reais" },
       { value: "03", label: "Formas de pedir", note: "Salão · Retirada · Delivery" },
     ],
@@ -304,12 +321,12 @@ export const copy = {
   },
 
   fries: {
-    eyebrow: "Batatas recheadas",
+    eyebrow: "Porções",
     titleTop: "VAI COM",
     titleBottom: "TUDO.",
-    intro: "Batata dourada, molhos da casa e recheio sem economia. Feita para dividir — se você quiser.",
+    intro: "Porções de 300g para dividir — batata dourada, cheddar, bacon flocado e dadinho de tapioca.",
     image: "/assets/loaded-fries.webp",
-    orbit: "RECHEADA · CREMOSA · GENEROSA · ",
+    orbit: "PARA DIVIDIR · QUENTE · GENEROSA · ",
   },
 
   pasta: {
@@ -360,12 +377,12 @@ export const copy = {
     ],
   },
 
-  /** ⚠️ Números de demonstração — confirme antes de publicar. */
+  /** ⚠️ "500+" ainda é número de demonstração — confirme antes de publicar. */
   stats: [
-    { icon: "★", value: 4.8, suffix: "", label: "Nota no Google" },
+    { icon: "★", value: 4.5, suffix: "", label: "Nota no Google" },
     { icon: "↗", value: 500, suffix: "+", label: "Avaliações reais" },
     { icon: "◆", value: null, display: "100%", label: "Artesanal" },
-    { icon: "⚡", value: null, display: "RÁPIDO", label: "Todo dia" },
+    { icon: "⚡", value: null, display: "RÁPIDO", label: "Seg a Sáb" },
   ] as StatItem[],
 
   reviews: {
@@ -378,8 +395,8 @@ export const copy = {
   contact: {
     eyebrow: "Seu próximo passo",
     title: "COM FOME?",
-    body: "Ligue e a gente prepara seu pedido.",
-    cta: "Ligar agora",
+    body: "Monte seu pedido no cardápio online e a gente prepara.",
+    cta: "Pedir agora",
     labels: {
       phone: "Telefone",
       address: "Onde estamos",
@@ -391,6 +408,7 @@ export const copy = {
   footer: {
     backToTop: "Voltar ao topo ↑",
     instagram: "Instagram",
+    facebook: "Facebook",
     maps: "Google Maps",
   },
 };
@@ -399,79 +417,90 @@ export const copy = {
 // Cardápio
 // ---------------------------------------------------------------------------
 
+/** ⚠️ Os 5 preços estão `null` — nenhum veio nas cartelas. Preencher antes de publicar. */
 export const burgers: Burger[] = [
   {
-    name: "Cruncher",
-    kicker: "Crocante. Direto. Clássico.",
-    price: 32,
-    ingredients: ["Frango empanado", "Queijo", "Molho da casa"],
-    description: "O crocante essencial, feito para acertar já na primeira mordida.",
-    image: "/assets/burger-cruncher.webp",
+    name: "Us Brazil",
+    kicker: "A obra da casa.",
+    price: null,
+    ingredients: [
+      "Blend 160g",
+      "Hambúrguer de Catupiry empanado",
+      "Pão brioche",
+      "Couve crispy",
+      "Cheddar e geleia agridoce",
+    ],
+    description: "Blend de 160g com hambúrguer de Catupiry empanado, couve crispy e geleia agridoce levemente apimentada.",
+    image: "/assets/burger-us-brazil.webp",
     tone: "#feb506",
   },
   {
-    name: "Grillz",
-    kicker: "Direto da chapa.",
-    price: 34,
-    ingredients: ["Carne grelhada", "Queijo", "Molho da casa"],
-    description: "Carne suculenta e queijo derretendo, sem nada para esconder.",
-    image: "/assets/burger-grillz.webp",
+    name: "Us Cheddar",
+    kicker: "Cheddar até o fim.",
+    price: null,
+    ingredients: [
+      "Blend 160g",
+      "Pão australiano",
+      "Creme de cheddar",
+      "Cebola caramelizada",
+      "Bacon flocado",
+    ],
+    description: "Creme de cheddar escorrendo, cebola caramelizada e bacon flocado no pão australiano.",
+    image: "/assets/burger-us-cheddar.webp",
     tone: "#ffc93c",
   },
   {
-    name: "Cheesy AF",
-    kicker: "Queijo no limite.",
-    price: 46,
-    ingredients: ["Frango ou carne", "Muçarela empanada", "Molho de queijo"],
-    description: "Uma pilha derretida para quem leva queijo a sério. Escolha frango ou carne.",
-    image: "/assets/burger-cheesy-af.webp",
+    name: "Us Chicken",
+    kicker: "Crocância de verdade.",
+    price: null,
+    ingredients: [
+      "Filé empanado no panko",
+      "Pão francês",
+      "Molho especial",
+      "Alface americana",
+      "Tomate",
+    ],
+    description: "Filé empanado no panko, muita crocância, molho especial e salada no pão francês.",
+    image: "/assets/burger-us-chicken.webp",
     tone: "#ffdc6b",
   },
   {
-    name: "Seaquel",
-    kicker: "O mar, remixado.",
-    price: 52,
-    ingredients: ["Peixe empanado", "Camarão empanado", "Kani", "Molho rouille"],
-    description: "Ousado, crocante e fresco, com um final marcante de molho rouille.",
-    image: "/assets/burger-seaquel.webp",
+    name: "Us Nachos",
+    kicker: "Sabor de nachos.",
+    price: null,
+    ingredients: [
+      "Blend 160g",
+      "Pão brioche",
+      "Fatias de bacon",
+      "Creme de cheddar",
+      "Doritos",
+    ],
+    description: "Creme de cheddar, fatias de bacon e Doritos por cima: um verdadeiro sabor de nachos.",
+    image: "/assets/burger-us-nachos.webp",
     tone: "#f5a623",
   },
   {
-    name: "Bad Guy",
-    kicker: "Perigosamente bom.",
-    price: 49,
-    ingredients: ["Carne", "Pastrami", "Cebola caramelizada", "Molho de chorizo"],
-    description: "Pastrami defumado, carne encorpada e cebola doce com um chute de chorizo.",
-    image: "/assets/burger-bad-guy.webp",
-    tone: "#e8890c",
-  },
-  {
-    name: "Bad Girl",
-    kicker: "Doce, com fio de corte.",
-    price: 49,
-    ingredients: ["Frango defumado", "Queijo", "Cebola caramelizada", "Tomate com chorizo"],
-    description: "Frango defumado na casa, cebola caramelizada e tomate apimentado.",
-    image: "/assets/burger-bad-girl.webp",
+    name: "Us Tasty",
+    kicker: "O clássico bem feito.",
+    price: null,
+    ingredients: [
+      "Blend 160g",
+      "Pão de gergelim",
+      "Cebola caramelizada",
+      "Queijo prato",
+      "Maionese verde da casa",
+    ],
+    description: "Cebola caramelizada, queijo prato, alface, tomate e nossa maionese verde no pão de gergelim.",
+    image: "/assets/burger-us-tasty.webp",
     tone: "#ffb020",
-  },
-  {
-    name: "US BRAZIL",
-    kicker: "A obra da casa.",
-    price: 56,
-    ingredients: ["Carne", "Filé", "Muçarela empanada", "Chimichurri"],
-    description: "Nossa composição assinada de carne dupla, fechada com muçarela crocante e chimichurri.",
-    image: "/assets/burger-signature.webp",
-    tone: "#feb506",
   },
 ];
 
+/** Seção "Porções" — a chave continua `fries` porque é o que a página usa. */
 export const fries: LineItem[] = [
-  { name: "Brux", price: 34, description: "Frango empanado · molho de queijo · gratinado" },
-  { name: "Chunk", price: 36, description: "Carne · gouda · molho de queijo · gratinado" },
-  { name: "Butter Chicken", price: 38, description: "Frango · creme de manteiga · especiarias suaves" },
-  { name: "Spice", price: 36, description: "Frango · molho de queijo · gratinado" },
-  { name: "Rage", price: 42, description: "Carne · pastrami · chorizo · gratinado" },
-  { name: "Badass", price: 42, description: "Frango defumado · tomate com chorizo · gratinado" },
+  { name: "Batata Simples", price: 19.97, description: "Porção de batata 300g" },
+  { name: "Batata Turbo", price: 29.9, description: "Batata 300g · cheddar · bacon flocado" },
+  { name: "Dadinho de Tapioca", price: 35.9, description: "Dadinho de tapioca 300g · geleia agridoce levemente apimentada" },
 ];
 
 export const pasta: LineItem[] = [

@@ -3,6 +3,7 @@ import {
   brand,
   burgers,
   contact,
+  locale,
   openingHours,
   seo,
 } from "@/site.config";
@@ -59,15 +60,34 @@ export function StructuredData() {
           "@type": "MenuItem",
           name: burger.name,
           description: burger.description,
-          offers: {
-            "@type": "Offer",
-            price: burger.price,
-            priceCurrency: "BRL",
-          },
+          // Item sem preço confirmado vai sem `offers`: melhor omitir do que
+          // declarar um valor que não é o que o cliente cobra.
+          offers:
+            burger.price === null
+              ? undefined
+              : {
+                  "@type": "Offer",
+                  price: burger.price,
+                  priceCurrency: "BRL",
+                },
         })),
       },
     },
-    sameAs: [contact.instagramHref, contact.mapsHref].filter(Boolean),
+    potentialAction: contact.orderHref
+      ? {
+          "@type": "OrderAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: contact.orderHref,
+            inLanguage: locale.lang,
+          },
+        }
+      : undefined,
+    sameAs: [
+      contact.instagramHref,
+      contact.facebookHref,
+      contact.mapsHref,
+    ].filter(Boolean),
   };
 
   return (

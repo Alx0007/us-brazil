@@ -34,12 +34,15 @@ site do cliente manda ligação para o lugar errado.
 - [ ] `contact.phoneDisplay` e `contact.phoneHref` — **os dois**. O href usa
       formato internacional (`tel:+5511...`) para funcionar em qualquer celular.
 - [ ] `contact.whatsappHref`
+- [ ] `contact.orderHref` — cardápio online. É o destino de todo botão "Pedir" e
+      de cada item do cardápio. `""` faz os botões voltarem a cair no telefone.
 - [ ] `contact.address` — rua, bairro, cidade, UF e CEP em campos separados.
       As linhas exibidas na página são montadas a partir daí, e os mesmos
       dados alimentam os dados estruturados do Google.
 - [ ] `contact.mapsHref` — de preferência o link real do perfil no Google Maps,
       não a busca por texto
 - [ ] `contact.instagramHref`
+- [ ] `contact.facebookHref` — opcional; `""` esconde o link do rodapé
 - [ ] `contact.hours` — horário real, com hora de abertura, como texto
 - [ ] `openingHours` — **o mesmo horário em formato estruturado**. É o que o
       Google lê para mostrar "aberto agora". Se divergir do texto acima, o site
